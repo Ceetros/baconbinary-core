@@ -5,9 +5,5 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.9" />
-  </ItemGroup>
-
+  
 </Project>
