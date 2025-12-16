@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using BaconBinary.Core.Enum;
 
 namespace BaconBinary.Core.Models
 {
-    /// <summary>
-    /// Represents the duration of a specific animation frame.
-    /// </summary>
     public struct FrameDuration
     {
         public int Minimum { get; set; }
@@ -30,7 +28,7 @@ namespace BaconBinary.Core.Models
         public byte Frames { get; set; } = 1;
         
         public bool IsAnimation { get; set; }
-        public int LoopCount { get; set; }
+        public uint LoopCount { get; set; }
         public byte AnimationMode { get; set; }
         public uint StartFrame { get; set; }
         public List<FrameDuration> FrameDurations { get; set; } = new();
@@ -41,9 +39,6 @@ namespace BaconBinary.Core.Models
         {
         }
 
-        /// <summary>
-        /// Configures the dimensions of the FrameGroup and initializes the storage array.
-        /// </summary>
         public void SetDimensions(byte width, byte height, byte layers, byte patternX, byte patternY, byte patternZ, byte frames)
         {
             Width = width;
@@ -58,43 +53,102 @@ namespace BaconBinary.Core.Models
             SpriteIDs = new uint[totalSprites];
         }
 
-        /// <summary>
-        /// Calculates the specific index in the SpriteIDs array based on the current state.
-        /// Replicates the formula used in standard Tibia clients.
-        /// </summary>
-        public int GetSpriteIndex(int frame, int x, int y, int z, int layer)
+        private int GetLinearIndex(int frame, int patternX, int patternY, int patternZ, int layer, int x, int y)
         {
-            int index = ((((frame % Frames) * PatternZ + z) * PatternY + y) * PatternX + x) * Layers + layer;
-            
-            return index * Width * Height;
-        }
-
-        /// <summary>
-        /// Gets the specific Sprite ID for a given coordinate and animation frame.
-        /// </summary>
-        public uint GetSpriteId(int frame, int x, int y, int z, int layer, int widthOffset = 0, int heightOffset = 0)
-        {
-            if (SpriteIDs == null || SpriteIDs.Length == 0)
+            if (frame >= Frames || patternX >= PatternX || patternY >= PatternY || patternZ >= PatternZ || layer >= Layers || x >= Width || y >= Height)
             {
-                return 0;
+                return -1;
             }
             
-            if (frame >= Frames) frame = frame % Frames;
-            if (z >= PatternZ) z = z % PatternZ;
-            if (y >= PatternY) y = y % PatternY;
-            if (x >= PatternX) x = x % PatternX;
-            if (layer >= Layers) layer = layer % Layers;
+            int index = ((((frame * PatternZ + patternZ) * PatternY + patternY) * PatternX + patternX) * Layers + layer) * Height * Width + (y * Width + x);
+            return index;
+        }
 
-            int baseIndex = GetSpriteIndex(frame, x, y, z, layer);
+        public uint GetSpriteId(int frame, int patternX, int patternY, int patternZ, int layer, int x, int y)
+        {
+            if (SpriteIDs == null || SpriteIDs.Length == 0) return 0;
             
-            int finalIndex = baseIndex + (heightOffset * Width) + widthOffset;
+            int index = GetLinearIndex(frame, patternX, patternY, patternZ, layer, x, y);
 
-            if (finalIndex >= 0 && finalIndex < SpriteIDs.Length)
+            if (index >= 0 && index < SpriteIDs.Length)
             {
-                return SpriteIDs[finalIndex];
+                return SpriteIDs[index];
             }
 
             return 0;
+        }
+
+        public void SetSpriteId(int frame, int patternX, int patternY, int patternZ, int layer, int x, int y, uint spriteId)
+        {
+            if (SpriteIDs == null || SpriteIDs.Length == 0) return;
+
+            int index = GetLinearIndex(frame, patternX, patternY, patternZ, layer, x, y);
+
+            if (index >= 0 && index < SpriteIDs.Length)
+            {
+                SpriteIDs[index] = spriteId;
+            }
+        }
+
+        public FrameGroup Clone()
+        {
+            var clone = (FrameGroup)this.MemberwiseClone();
+            
+            // Deep clone collections
+            if (SpriteIDs != null)
+            {
+                clone.SpriteIDs = (uint[])SpriteIDs.Clone();
+            }
+            
+            if (FrameDurations != null)
+            {
+                clone.FrameDurations = new List<FrameDuration>(FrameDurations);
+            }
+
+            return clone;
+        }
+
+        public void Resize(byte width, byte height, byte layers, byte patternX, byte patternY, byte patternZ, byte frames)
+        {
+            var oldGroup = this.Clone(); // Keep old data to copy from
+            
+            // Set new dimensions (this resets SpriteIDs)
+            SetDimensions(width, height, layers, patternX, patternY, patternZ, frames);
+            
+            // Copy data from old group
+            int minWidth = Math.Min(width, oldGroup.Width);
+            int minHeight = Math.Min(height, oldGroup.Height);
+            int minLayers = Math.Min(layers, oldGroup.Layers);
+            int minPatternX = Math.Min(patternX, oldGroup.PatternX);
+            int minPatternY = Math.Min(patternY, oldGroup.PatternY);
+            int minPatternZ = Math.Min(patternZ, oldGroup.PatternZ);
+            int minFrames = Math.Min(frames, oldGroup.Frames);
+
+            for (int f = 0; f < minFrames; f++)
+            for (int z = 0; z < minPatternZ; z++)
+            for (int py = 0; py < minPatternY; py++)
+            for (int px = 0; px < minPatternX; px++)
+            for (int l = 0; l < minLayers; l++)
+            for (int y = 0; y < minHeight; y++)
+            for (int x = 0; x < minWidth; x++)
+            {
+                uint spriteId = oldGroup.GetSpriteId(f, px, py, z, l, x, y);
+                SetSpriteId(f, px, py, z, l, x, y, spriteId);
+            }
+            
+            // Handle FrameDurations resizing
+            if (frames != oldGroup.Frames)
+            {
+                var newDurations = new List<FrameDuration>();
+                for (int i = 0; i < frames; i++)
+                {
+                    if (i < oldGroup.FrameDurations.Count)
+                        newDurations.Add(oldGroup.FrameDurations[i]);
+                    else
+                        newDurations.Add(new FrameDuration(100, 100)); // Default duration
+                }
+                FrameDurations = newDurations;
+            }
         }
     }
 }

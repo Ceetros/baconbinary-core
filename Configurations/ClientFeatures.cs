@@ -1,6 +1,4 @@
-using System;
-
-namespace BaconBinary.Core
+namespace BaconBinary.Core.Configurations
 {
     public static class ClientFeatures
     {
@@ -14,7 +12,6 @@ namespace BaconBinary.Core
             Extended = false;
             FrameGroups = false;
             FrameDurations = false;
-            Transparency = false;
             
             if (version >= 960)
             {
@@ -30,8 +27,6 @@ namespace BaconBinary.Core
             {
                 FrameDurations = true;
             }
-            
-            Transparency = false; 
         }
     }
 }

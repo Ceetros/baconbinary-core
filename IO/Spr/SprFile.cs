@@ -1,68 +1,18 @@
+using System.Collections.Generic;
 using System.IO;
+using BaconBinary.Core.Models;
 
 namespace BaconBinary.Core.IO.Spr
 {
-    public class SprFile : IDisposable
+    public class SprFile
     {
-        private FileStream _fileStream;
-        private BinaryReader _reader;
-        private readonly object _lock = new object();
-        
-        private long[] _offsets;
+        public uint Signature { get; set; }
+        public uint SpriteCount { get; set; }
 
-        public int SpriteCount { get; private set; }
+        public Dictionary<uint, Sprite> Sprites { get; } = new();
 
-        public SprFile(string filePath)
+        public SprFile()
         {
-            _fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            _reader = new BinaryReader(_fileStream);
-        }
-
-        public void SetOffsets(long[] offsets, int count)
-        {
-            _offsets = offsets;
-            SpriteCount = count;
-        }
-        
-        public byte[] GetSpritePixels(int spriteId)
-        {
-            if (spriteId <= 0 || spriteId >= _offsets.Length)
-                return null;
-
-            long address = _offsets[spriteId];
-            
-            if (address == 0) return null;
-
-            lock (_lock)
-            {
-                _fileStream.Seek(address, SeekOrigin.Begin);
-                return null; 
-            }
-        }
-        
-        public BinaryReader GetReaderAt(int spriteId)
-        {
-             if (spriteId <= 0 || spriteId > SpriteCount) return null;
-             long address = _offsets[spriteId];
-             if (address == 0) return null;
-
-             lock (_lock)
-             {
-                 _fileStream.Seek(address, SeekOrigin.Begin);
-                 return _reader;
-             }
-        }
-
-        public void Dispose()
-        {
-            _reader?.Close();
-            _fileStream?.Dispose();
-        }
-        
-        public Stream GetStreamForHeaderReading()
-        {
-            _fileStream.Seek(0, SeekOrigin.Begin);
-            return _fileStream;
         }
     }
 }

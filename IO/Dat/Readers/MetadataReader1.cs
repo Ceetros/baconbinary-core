@@ -1,3 +1,4 @@
+using BaconBinary.Core.Configurations;
 using BaconBinary.Core.Enum;
 using BaconBinary.Core.IO.Dat.Interfaces;
 using BaconBinary.Core.Models;
@@ -6,6 +7,8 @@ namespace BaconBinary.Core.IO.Dat.Readers
 {
     public class MetadataReader1 : IMetadataReader
     {
+        private IMetadataReader _metadataReaderImplementation;
+
         public bool ReadProperties(ClientBinaryReader reader, ThingType type)
         {
             
@@ -41,7 +44,7 @@ namespace BaconBinary.Core.IO.Dat.Readers
                         break;
 
                     case DatFlags.MultiUse:
-                        type.MultiUse = true;
+                        type.IsMultiUse = true;
                         break;
 
                     case DatFlags.ForceUse:
@@ -212,6 +215,11 @@ namespace BaconBinary.Core.IO.Dat.Readers
 
                 type.FrameGroups[FrameGroupType.Default] = frameGroup;
             }
+        }
+
+        public void WriteThing(BinaryWriter writer, ThingType thing)
+        {
+            throw new NotImplementedException();
         }
     }
 }

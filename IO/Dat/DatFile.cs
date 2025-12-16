@@ -5,6 +5,8 @@ namespace BaconBinary.Core.IO.Dat
 {
     public class DatFile
     {
+        public uint Signature { get; set; }
+        public string Version { get; set; }
         public Dictionary<uint, ThingType> Items { get; private set; } = new();
         public Dictionary<uint, ThingType> Outfits { get; private set; } = new();
         public Dictionary<uint, ThingType> Effects { get; private set; } = new();

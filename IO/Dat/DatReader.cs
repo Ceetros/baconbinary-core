@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using BaconBinary.Core.Configurations;
 using BaconBinary.Core.Models;
 using BaconBinary.Core.Enum;
 using BaconBinary.Core.IO.Dat.Interfaces;
@@ -10,9 +11,6 @@ namespace BaconBinary.Core.IO.Dat
 {
     public class DatReader
     {
-        /// <summary>
-        /// Reads the .dat file and returns the full data structure in memory.
-        /// </summary>
         public DatFile ReadDatFile(string filePath, string selectedVersion)
         {
             if (!File.Exists(filePath))
@@ -32,16 +30,24 @@ namespace BaconBinary.Core.IO.Dat
                     throw new InvalidDataException($"Invalid file signature.");
                 }
                 
-                return ParseContent(baseReader, selectedVersion);
+                return ParseContent(baseReader, selectedVersion, fileSignature);
             }
         }
 
-        private DatFile ParseContent(BinaryReader baseReader, string version)
+        private DatFile ParseContent(BinaryReader baseReader, string version, uint signature)
         {
-            var datFile = new DatFile();
+            var datFile = new DatFile
+            {
+                Signature = signature,
+                Version = version
+            };
+            
             var reader = new ClientBinaryReader(baseReader.BaseStream);
             
             ushort versionNumber = ParseVersionString(version);
+            
+            ClientFeatures.SetVersion(versionNumber);
+            
             IMetadataReader metadataReader = MetadataReaderFactory.GetReader(versionNumber);
 
             reader.BaseStream.Position = 4;
@@ -53,10 +59,7 @@ namespace BaconBinary.Core.IO.Dat
             reader.BaseStream.Position = 10;
             var missileCount = reader.ReadU16();
             
-            System.Diagnostics.Debug.WriteLine($"HEADER CHECK: Items={itemCount}, Outfits={outfitCount}, Effects={effectCount}, Missiles={missileCount}");
-            
             ReadCategory(reader, metadataReader, itemCount, ThingCategory.Item, 100, datFile.Items);
-            
             ReadCategory(reader, metadataReader, outfitCount, ThingCategory.Outfit, 1, datFile.Outfits);
             ReadCategory(reader, metadataReader, effectCount, ThingCategory.Effect, 1, datFile.Effects);
             ReadCategory(reader, metadataReader, missileCount, ThingCategory.Missile, 1, datFile.Missiles);
@@ -71,11 +74,10 @@ namespace BaconBinary.Core.IO.Dat
                 uint currentId = i;
 
                 var thing = new ThingType();
-                thing.ID = currentId;
+                thing.Id = currentId;
                 thing.Category = category;
                 
                 metaReader.ReadProperties(reader, thing);
-                
                 metaReader.ReadTexturePatterns(reader, thing);
                 
                 dictionary[currentId] = thing;

@@ -1,104 +1,120 @@
 using System.Collections.Generic;
+using System.Linq;
 using BaconBinary.Core.Enum;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BaconBinary.Core.Models
 {
-    public class ThingType
+    public partial class ThingType : ObservableObject
     {
-        public uint ID { get; set; }
-        public ThingCategory Category { get; set; }
+        [ObservableProperty] private uint _id;
+        [ObservableProperty] private ThingCategory _category;
 
         public int? FrameIndex { get; set; } = 0;
         
-        public Dictionary<FrameGroupType, FrameGroup> FrameGroups { get; private set; } = new();
+        public Dictionary<FrameGroupType, FrameGroup> FrameGroups { get; set; } = new();
         
+        // Helper properties for UI Binding
+        public byte Width => GetDefaultFrameGroup()?.Width ?? 1;
+        public byte Height => GetDefaultFrameGroup()?.Height ?? 1;
+        public byte Layers => GetDefaultFrameGroup()?.Layers ?? 1;
+        public byte PatternX => GetDefaultFrameGroup()?.PatternX ?? 1;
+        public byte PatternY => GetDefaultFrameGroup()?.PatternY ?? 1;
+        public byte PatternZ => GetDefaultFrameGroup()?.PatternZ ?? 1;
+        public int Frames => GetDefaultFrameGroup()?.Frames ?? 1;
         
         // Ground Properties
-        public bool IsGround { get; set; }
-        public ushort GroundSpeed { get; set; }
-        public bool IsGroundBorder { get; set; }
-        public bool IsFullGround { get; set; }
-        public bool FloorChange { get; set; }
+        [ObservableProperty] private bool _isGround;
+        [ObservableProperty] private ushort _groundSpeed;
+        [ObservableProperty] private bool _isGroundBorder;
+        [ObservableProperty] private bool _isFullGround;
+        [ObservableProperty] private bool _floorChange;
 
         // Stacking / Container
-        public bool IsOnBottom { get; set; }
-        public bool IsOnTop { get; set; }
-        public bool IsContainer { get; set; }
-        public bool IsStackable { get; set; }
+        [ObservableProperty] private bool _isOnBottom;
+        [ObservableProperty] private bool _isOnTop;
+        [ObservableProperty] private bool _isContainer;
+        [ObservableProperty] private bool _isStackable;
 
         // Interaction
-        public bool ForceUse { get; set; }
-        public bool MultiUse { get; set; }
-        public bool HasCharges { get; set; }
-        public bool IsUsable { get; set; }
-        public bool HasDefaultAction { get; set; }
-        public bool IsWrapable { get; set; }
-        public bool IsUnwrapable { get; set; }
-        public ushort DefaultAction { get; set; }
+        [ObservableProperty] private bool _forceUse;
+        [ObservableProperty] private bool _isMultiUse;
+        [ObservableProperty] private bool _hasCharges;
+        [ObservableProperty] private bool _isUsable;
+        [ObservableProperty] private bool _hasDefaultAction;
+        [ObservableProperty] private bool _isWrapable;
+        [ObservableProperty] private bool _isUnwrapable;
+        [ObservableProperty] private ushort _defaultAction;
 
         // Writing
-        public bool IsWritable { get; set; }
-        public bool IsWritableOnce { get; set; }
-        public ushort MaxTextLength { get; set; }
+        [ObservableProperty] private bool _isWritable;
+        [ObservableProperty] private bool _isWritableOnce;
+        [ObservableProperty] private ushort _maxTextLength;
+        
+        public bool IsReadable { get => IsWritableOnce; set => SetProperty(ref _isWritableOnce, value); }
 
         // Fluids
-        public bool IsFluidContainer { get; set; }
-        public bool IsFluid { get; set; }
+        [ObservableProperty] private bool _isFluidContainer;
+        [ObservableProperty] private bool _isFluid;
 
         // Movement / Blocking
-        public bool IsUnpassable { get; set; }
-        public bool IsUnmoveable { get; set; }
-        public bool BlockMissile { get; set; }
-        public bool BlockPathfind { get; set; }
-        public bool NoMoveAnimation { get; set; }
-        public bool IsPickupable { get; set; }
-        public bool IsHangable { get; set; }
+        [ObservableProperty] private bool _isUnpassable;
+        [ObservableProperty] private bool _isUnmoveable;
+        [ObservableProperty] private bool _blockMissile;
+        [ObservableProperty] private bool _blockPathfind;
+        [ObservableProperty] private bool _noMoveAnimation;
+        [ObservableProperty] private bool _isPickupable;
+        [ObservableProperty] private bool _isHangable;
+        [ObservableProperty] private bool _isHookSouth;
+        [ObservableProperty] private bool _isHookEast;
+        
+        public bool WalkStack { get => Elevation > 0; set { if(value && Elevation == 0) Elevation = 1; else if(!value) Elevation = 0; OnPropertyChanged(nameof(WalkStack)); } }
 
         // Orientation
-        public bool IsVertical { get; set; }
-        public bool IsHorizontal { get; set; }
-        public bool IsRotatable { get; set; }
-        public bool IsLyingObject { get; set; }
+        [ObservableProperty] private bool _isVertical;
+        [ObservableProperty] private bool _isHorizontal;
+        [ObservableProperty] private bool _isRotatable;
+        [ObservableProperty] private bool _isLyingObject;
 
         // Visuals
-        public bool HasLight { get; set; }
-        public ushort LightLevel { get; set; }
-        public ushort LightColor { get; set; }
-        public bool DontHide { get; set; }
-        public bool IsTranslucent { get; set; }
-        public bool AnimateAlways { get; set; }
-        public bool IsTopEffect { get; set; }
-        public bool IgnoreLook { get; set; }
+        [ObservableProperty] private bool _hasLight;
+        [ObservableProperty] private ushort _lightLevel;
+        [ObservableProperty] private ushort _lightColor;
+        [ObservableProperty] private bool _dontHide;
+        [ObservableProperty] private bool _isTranslucent;
+        [ObservableProperty] private bool _animateAlways;
+        [ObservableProperty] private bool _isTopEffect;
+        [ObservableProperty] private bool _ignoreLook;
 
         // Offset / Elevation
-        public bool HasOffset { get; set; }
-        public short OffsetX { get; set; }
-        public short OffsetY { get; set; }
-        public bool HasElevation { get; set; }
-        public ushort Elevation { get; set; }
+        [ObservableProperty] private bool _hasOffset;
+        [ObservableProperty] private short _offsetX;
+        [ObservableProperty] private short _offsetY;
+        [ObservableProperty] private bool _hasElevation;
+        [ObservableProperty] private ushort _elevation;
 
         // Minimap & Lens
-        public bool IsMiniMap { get; set; }
-        public ushort MiniMapColor { get; set; }
-        public bool IsLensHelp { get; set; }
-        public ushort LensHelp { get; set; }
+        [ObservableProperty] private bool _isMiniMap;
+        [ObservableProperty] private ushort _miniMapColor;
+        [ObservableProperty] private bool _isLensHelp;
+        [ObservableProperty] private ushort _lensHelp;
 
         // Cloth / Player
-        public bool IsCloth { get; set; }
-        public ushort ClothSlot { get; set; }
+        [ObservableProperty] private bool _isCloth;
+        [ObservableProperty] private ushort _clothSlot;
 
         // Market
-        public bool IsMarketItem { get; set; }
-        public ushort MarketCategory { get; set; }
-        public ushort MarketTradeAs { get; set; }
-        public ushort MarketShowAs { get; set; }
-        public string MarketName { get; set; }
-        public ushort MarketRestrictProfession { get; set; }
-        public ushort MarketRestrictLevel { get; set; }
+        [ObservableProperty] private bool _isMarketItem;
+        [ObservableProperty] private ushort _marketCategory;
+        [ObservableProperty] private ushort _marketTradeAs;
+        [ObservableProperty] private ushort _marketShowAs;
+        [ObservableProperty] private string _marketName;
+        [ObservableProperty] private ushort _marketRestrictProfession;
+        [ObservableProperty] private ushort _marketRestrictLevel;
 
         // Wrapping
-        public bool IsWrappable { get; set; }
-        public bool IsUnwrappable { get; set; }
+        [ObservableProperty] private bool _isWrappable;
+        [ObservableProperty] private bool _isUnwrappable;
 
 
         public ThingType()
@@ -106,13 +122,42 @@ namespace BaconBinary.Core.Models
         }
 
         /// <summary>
-        /// Helper to get the main framegroup (usually Default/Idle).
+        /// Creates a deep clone of the ThingType, including its FrameGroups.
         /// </summary>
+        public ThingType Clone()
+        {
+            var clone = (ThingType)this.MemberwiseClone();
+            
+            // Deep clone the FrameGroups dictionary
+            clone.FrameGroups = new Dictionary<FrameGroupType, FrameGroup>();
+            foreach (var pair in this.FrameGroups)
+            {
+                clone.FrameGroups.Add(pair.Key, pair.Value.Clone());
+            }
+
+            return clone;
+        }
+
+        /// <summary>
+        /// Applies properties from another ThingType to this instance.
+        /// </summary>
+        public void ApplyProps(ThingType source)
+        {
+            var properties = typeof(ThingType).GetProperties().Where(p => p.CanWrite && p.CanRead);
+            foreach (var prop in properties)
+            {
+                // Don't copy FrameGroups, as they are managed separately
+                if (prop.Name != nameof(FrameGroups))
+                {
+                    var value = prop.GetValue(source);
+                    prop.SetValue(this, value);
+                }
+            }
+        }
+
         public FrameGroup GetDefaultFrameGroup()
         {
-            return FrameGroups.ContainsKey(FrameGroupType.Default) 
-                ? FrameGroups[FrameGroupType.Default] 
-                : null;
+            return FrameGroups.Values.FirstOrDefault();
         }
     }
 }
