@@ -45,5 +45,6 @@ public enum DatFlags : byte
     TopEffect = 0x26,
         
     Usable = 0xFE,
-    LastFlag = 0xFF
+    LastFlag = 0xFF,
+    End = 0xFF
 }

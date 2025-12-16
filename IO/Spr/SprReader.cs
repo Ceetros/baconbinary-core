@@ -1,75 +1,70 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using BaconBinary.Core.IO; 
+using BaconBinary.Core.Configurations;
+using BaconBinary.Core.Models;
 
 namespace BaconBinary.Core.IO.Spr
 {
     public class SprReader
     {
-        public SprFile ReadSprFile(string filePath, string version, bool extended = false)
+        public SprFile ReadSprFile(string filePath, string version)
         {
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException($"Sprite file not found: {filePath}");
-            }
-            
-            byte[] expectedSig = SprSignature.GetSignature(version);
-            
-            var sprFile = new SprFile(filePath);
-            
-            var stream = sprFile.GetStreamForHeaderReading();
-            var reader = new BinaryReader(stream);
+            var sprFile = new SprFile();
 
-            byte[] fileSig = reader.ReadBytes(expectedSig.Length);
-            if (!fileSig.SequenceEqual(expectedSig))
+            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            using (var reader = new BinaryReader(stream))
             {
-                sprFile.Dispose();
-                throw new InvalidDataException($"Invalid .spr file signature for version {version}.");
-            }
+                sprFile.Signature = reader.ReadUInt32();
+                
+                ushort versionNumber = ushort.Parse(version.Replace(".", ""));
+                ClientFeatures.SetVersion(versionNumber);
 
-            int spriteCount = ClientFeatures.Extended ? (int)reader.ReadUInt32() : reader.ReadUInt16();
-            
-            long[] offsets = new long[spriteCount + 1]; 
-            
-            for (int i = 1; i <= spriteCount; i++)
-            {
-                offsets[i] = reader.ReadUInt32();
+                if (ClientFeatures.Extended)
+                {
+                    sprFile.SpriteCount = reader.ReadUInt32();
+                }
+                else
+                {
+                    sprFile.SpriteCount = reader.ReadUInt16();
+                }
+                
+                var addresses = new List<uint>();
+                for (uint i = 0; i < sprFile.SpriteCount; i++)
+                {
+                    addresses.Add(reader.ReadUInt32());
+                }
+                
+                for (uint id = 1; id <= sprFile.SpriteCount; id++)
+                {
+                    uint address = addresses[(int)id - 1];
+                    if (address == 0)
+                    {
+                        sprFile.Sprites[id] = new Sprite(id, ClientFeatures.Transparency);
+                        continue;
+                    }
+
+                    reader.BaseStream.Position = address;
+                    
+                    reader.ReadBytes(3);
+                    
+                    ushort pixelDataSize = reader.ReadUInt16();
+                    
+                    var sprite = new Sprite(id, ClientFeatures.Transparency)
+                    {
+                        Size = pixelDataSize
+                    };
+
+                    if (pixelDataSize > 0)
+                    {
+                        sprite.CompressedPixels = reader.ReadBytes(pixelDataSize);
+                    }
+                    
+                    sprFile.Sprites[id] = sprite;
+                }
             }
-            
-            sprFile.SetOffsets(offsets, spriteCount);
 
             return sprFile;
-        }
-        
-        public byte[] ExtractPixels(SprFile sprFile, int spriteId)
-        {
-            var reader = sprFile.GetReaderAt(spriteId);
-            if (reader == null)
-            {
-                return null;
-            }
-            
-            try
-            {
-                byte[] header = reader.ReadBytes(5);
-                
-                if (header.Length < 5) return null;
-                
-                ushort dataSize = BitConverter.ToUInt16(header, 3);
-                
-                byte[] body = reader.ReadBytes(dataSize);
-                
-                byte[] fullBlock = new byte[header.Length + body.Length];
-                Buffer.BlockCopy(header, 0, fullBlock, 0, header.Length);
-                Buffer.BlockCopy(body, 0, fullBlock, header.Length, body.Length);
-                
-                return fullBlock;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using BaconBinary.Core.Configurations;
 using BaconBinary.Core.Enum;
 using BaconBinary.Core.IO.Dat.Interfaces;
 using BaconBinary.Core.Models;
@@ -26,7 +27,7 @@ namespace BaconBinary.Core.IO.Dat.Readers
                     case DatFlags.OnTop: type.IsOnTop = true; break;
                     case DatFlags.Container: type.IsContainer = true; break;
                     case DatFlags.Stackable: type.IsStackable = true; break;
-                    case DatFlags.MultiUse: type.MultiUse = true; break;
+                    case DatFlags.MultiUse: type.IsMultiUse = true; break;
                     case DatFlags.ForceUse: type.ForceUse = true; break;
                     case DatFlags.Writable:
                         type.IsWritable = true;
@@ -44,8 +45,8 @@ namespace BaconBinary.Core.IO.Dat.Readers
                     case DatFlags.BlockPathfind: type.BlockPathfind = true; break;
                     case DatFlags.Pickupable: type.IsPickupable = true; break;
                     case DatFlags.Hangable: type.IsHangable = true; break;
-                    case DatFlags.Vertical: type.IsVertical = true; break;
-                    case DatFlags.Horizontal: type.IsHorizontal = true; break;
+                    case DatFlags.Vertical: type.IsHookEast = true; break;
+                    case DatFlags.Horizontal: type.IsHookSouth = true; break;
                     case DatFlags.Rotatable: type.IsRotatable = true; break;
                     case DatFlags.HasLight:
                         type.HasLight = true;
@@ -74,7 +75,6 @@ namespace BaconBinary.Core.IO.Dat.Readers
                         type.LensHelp = reader.ReadU16();
                         break;
                     default:
-                        // Ignorar flags desconhecidas
                         break;
                 }
             }
@@ -115,6 +115,11 @@ namespace BaconBinary.Core.IO.Dat.Readers
             }
 
             type.FrameGroups[FrameGroupType.Default] = group;
+        }
+
+        public void WriteThing(BinaryWriter writer, ThingType thing)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -13,5 +13,7 @@ namespace BaconBinary.Core.IO.Dat.Interfaces
         /// Reads the graphic structure: Width, Height, Layers, Frames and SpriteIDs.
         /// </summary>
         void ReadTexturePatterns(ClientBinaryReader reader, ThingType type);
+
+        void WriteThing(BinaryWriter writer, ThingType thing);
     }
 }
