@@ -14,14 +14,103 @@ namespace BaconBinary.Core.Models
         
         public Dictionary<FrameGroupType, FrameGroup> FrameGroups { get; set; } = new();
         
-        // Helper properties for UI Binding
-        public byte Width => GetDefaultFrameGroup()?.Width ?? 1;
-        public byte Height => GetDefaultFrameGroup()?.Height ?? 1;
-        public byte Layers => GetDefaultFrameGroup()?.Layers ?? 1;
-        public byte PatternX => GetDefaultFrameGroup()?.PatternX ?? 1;
-        public byte PatternY => GetDefaultFrameGroup()?.PatternY ?? 1;
-        public byte PatternZ => GetDefaultFrameGroup()?.PatternZ ?? 1;
-        public int Frames => GetDefaultFrameGroup()?.Frames ?? 1;
+        public byte Width
+        {
+            get => GetDefaultFrameGroup()?.Width ?? 1;
+            set
+            {
+                var group = GetDefaultFrameGroup();
+                if (group != null && group.Width != value)
+                {
+                    group.Width = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        
+        public byte Height
+        {
+            get => GetDefaultFrameGroup()?.Height ?? 1;
+            set
+            {
+                var group = GetDefaultFrameGroup();
+                if (group != null && group.Height != value)
+                {
+                    group.Height = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        
+        public byte Layers
+        {
+            get => GetDefaultFrameGroup()?.Layers ?? 1;
+            set
+            {
+                var group = GetDefaultFrameGroup();
+                if (group != null && group.Layers != value)
+                {
+                    group.Layers = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        
+        public byte PatternX
+        {
+            get => GetDefaultFrameGroup()?.PatternX ?? 1;
+            set
+            {
+                var group = GetDefaultFrameGroup();
+                if (group != null && group.PatternX != value)
+                {
+                    group.PatternX = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        
+        public byte PatternY
+        {
+            get => GetDefaultFrameGroup()?.PatternY ?? 1;
+            set
+            {
+                var group = GetDefaultFrameGroup();
+                if (group != null && group.PatternY != value)
+                {
+                    group.PatternY = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        
+        public byte PatternZ
+        {
+            get => GetDefaultFrameGroup()?.PatternZ ?? 1;
+            set
+            {
+                var group = GetDefaultFrameGroup();
+                if (group != null && group.PatternZ != value)
+                {
+                    group.PatternZ = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        
+        public byte Frames
+        {
+            get => (byte)(GetDefaultFrameGroup()?.Frames ?? 1);
+            set
+            {
+                var group = GetDefaultFrameGroup();
+                if (group != null && group.Frames != value)
+                {
+                    group.Frames = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         
         // Ground Properties
         [ObservableProperty] private bool _isGround;
@@ -56,6 +145,7 @@ namespace BaconBinary.Core.Models
         // Fluids
         [ObservableProperty] private bool _isFluidContainer;
         [ObservableProperty] private bool _isFluid;
+        [ObservableProperty] private bool _isSplash;
 
         // Movement / Blocking
         [ObservableProperty] private bool _isUnpassable;
@@ -157,6 +247,10 @@ namespace BaconBinary.Core.Models
 
         public FrameGroup GetDefaultFrameGroup()
         {
+            if (!FrameGroups.Any())
+            {
+                FrameGroups[FrameGroupType.Default] = new FrameGroup();
+            }
             return FrameGroups.Values.FirstOrDefault();
         }
     }

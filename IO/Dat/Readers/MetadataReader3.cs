@@ -75,7 +75,6 @@ namespace BaconBinary.Core.IO.Dat.Readers
                         type.LensHelp = reader.ReadU16();
                         break;
                     default:
-                        // Ignorar flags desconhecidas
                         break;
                 }
             }

@@ -94,7 +94,6 @@ namespace BaconBinary.Core.Models
         {
             var clone = (FrameGroup)this.MemberwiseClone();
             
-            // Deep clone collections
             if (SpriteIDs != null)
             {
                 clone.SpriteIDs = (uint[])SpriteIDs.Clone();
@@ -110,12 +109,10 @@ namespace BaconBinary.Core.Models
 
         public void Resize(byte width, byte height, byte layers, byte patternX, byte patternY, byte patternZ, byte frames)
         {
-            var oldGroup = this.Clone(); // Keep old data to copy from
+            var oldGroup = this.Clone();
             
-            // Set new dimensions (this resets SpriteIDs)
             SetDimensions(width, height, layers, patternX, patternY, patternZ, frames);
             
-            // Copy data from old group
             int minWidth = Math.Min(width, oldGroup.Width);
             int minHeight = Math.Min(height, oldGroup.Height);
             int minLayers = Math.Min(layers, oldGroup.Layers);
@@ -136,7 +133,6 @@ namespace BaconBinary.Core.Models
                 SetSpriteId(f, px, py, z, l, x, y, spriteId);
             }
             
-            // Handle FrameDurations resizing
             if (frames != oldGroup.Frames)
             {
                 var newDurations = new List<FrameDuration>();
@@ -145,7 +141,7 @@ namespace BaconBinary.Core.Models
                     if (i < oldGroup.FrameDurations.Count)
                         newDurations.Add(oldGroup.FrameDurations[i]);
                     else
-                        newDurations.Add(new FrameDuration(100, 100)); // Default duration
+                        newDurations.Add(new FrameDuration(100, 100));
                 }
                 FrameDurations = newDurations;
             }

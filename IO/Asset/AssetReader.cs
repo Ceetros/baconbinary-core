@@ -24,7 +24,7 @@ namespace BaconBinary.Core.IO.Asset
             using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
             using var reader = new BinaryReader(fileStream);
             
-            byte[] signatureBytes = reader.ReadBytes(6);
+            byte[] signatureBytes = reader.ReadBytes(5);
             string signature = Encoding.ASCII.GetString(signatureBytes);
             if (signature != "BSUIT")
                 throw new InvalidDataException("Invalid asset file signature.");

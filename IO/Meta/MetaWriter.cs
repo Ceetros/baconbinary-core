@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using BaconBinary.Core.Configurations;
 using BaconBinary.Core.Enum;
@@ -12,14 +16,16 @@ namespace BaconBinary.Core.IO.Meta
     {
         public void WriteMetaFile(DatFile datFile, SprFile sprFile, string path, bool encrypt, string key)
         {
-            var bodyStream = new MemoryStream();
+            byte[] bodyBytes;
+            
+            using (var bodyStream = new MemoryStream())
             using (var bodyWriter = new BinaryWriter(bodyStream))
             {
                 WriteBody(bodyWriter, datFile, sprFile, path);
+                bodyWriter.Flush();
+                bodyBytes = bodyStream.ToArray();
             }
             
-            byte[] bodyBytes = bodyStream.ToArray();
-
             byte[] iv = null;
             if (encrypt)
             {
@@ -30,8 +36,8 @@ namespace BaconBinary.Core.IO.Meta
             using (var writer = new BinaryWriter(finalStream))
             {
                 writer.Write(Encoding.ASCII.GetBytes("BSUIT"));
-                writer.Write((byte)1); // Format Version
-                writer.Write(encrypt ? (byte)1 : (byte)0); // Encryption Type
+                writer.Write((byte)1);
+                writer.Write(encrypt ? (byte)1 : (byte)0);
                 
                 if (encrypt)
                 {
@@ -146,8 +152,8 @@ namespace BaconBinary.Core.IO.Meta
                 if (thing.IgnoreLook) common |= CommonFlags.IgnoreLook;
                 if (thing.IsCloth) common |= CommonFlags.IsCloth;
                 if (thing.HasDefaultAction) common |= CommonFlags.HasDefaultAction;
-                if (thing.IsWrapable) common |= CommonFlags.IsWrappable;
-                if (thing.IsUnwrapable) common |= CommonFlags.IsUnwrappable;
+                if (thing.IsWrappable) common |= CommonFlags.IsWrappable;
+                if (thing.IsUnwrappable) common |= CommonFlags.IsUnwrappable;
                 if (thing.IsUsable) common |= CommonFlags.IsUsable;
                 if (thing.IsVertical) common |= CommonFlags.IsVertical;
                 if (thing.IsHorizontal) common |= CommonFlags.IsHorizontal;
@@ -176,17 +182,18 @@ namespace BaconBinary.Core.IO.Meta
                 thingWriter.Write((uint)common);
                 thingWriter.Write((uint)itemFlags);
 
-                if (thing.HasOffset) { thingWriter.Write(thing.OffsetX); thingWriter.Write(thing.OffsetY); }
-                if (thing.HasElevation) thingWriter.Write(thing.Elevation);
-                if (thing.HasLight) { thingWriter.Write(thing.LightLevel); thingWriter.Write(thing.LightColor); }
-                if (thing.IsMiniMap) thingWriter.Write(thing.MiniMapColor);
-                if (thing.IsLensHelp) thingWriter.Write(thing.LensHelp);
-                if (thing.IsCloth) thingWriter.Write(thing.ClothSlot);
-                if (thing.HasDefaultAction) thingWriter.Write(thing.DefaultAction);
-                if (thing.IsGround) thingWriter.Write(thing.GroundSpeed);
-                if (thing.IsWritable) thingWriter.Write(thing.MaxTextLength);
-                if (thing.IsReadable) thingWriter.Write(thing.MaxTextLength);
-                if (thing.IsMarketItem)
+                if (common.HasFlag(CommonFlags.HasOffset)) { thingWriter.Write(thing.OffsetX); thingWriter.Write(thing.OffsetY); }
+                if (common.HasFlag(CommonFlags.HasElevation)) thingWriter.Write(thing.Elevation);
+                if (common.HasFlag(CommonFlags.HasLight)) { thingWriter.Write(thing.LightLevel); thingWriter.Write(thing.LightColor); }
+                if (common.HasFlag(CommonFlags.IsMiniMap)) thingWriter.Write(thing.MiniMapColor);
+                if (common.HasFlag(CommonFlags.IsLensHelp)) thingWriter.Write(thing.LensHelp);
+                if (common.HasFlag(CommonFlags.IsCloth)) thingWriter.Write(thing.ClothSlot);
+                if (common.HasFlag(CommonFlags.HasDefaultAction)) thingWriter.Write(thing.DefaultAction);
+
+                if (itemFlags.HasFlag(ItemFlags.IsGround)) thingWriter.Write(thing.GroundSpeed);
+                if (itemFlags.HasFlag(ItemFlags.IsWritable)) thingWriter.Write(thing.MaxTextLength);
+                if (itemFlags.HasFlag(ItemFlags.IsReadable)) thingWriter.Write(thing.MaxTextLength);
+                if (itemFlags.HasFlag(ItemFlags.IsMarketItem))
                 {
                     thingWriter.Write(thing.MarketCategory);
                     thingWriter.Write(thing.MarketTradeAs);
@@ -209,17 +216,23 @@ namespace BaconBinary.Core.IO.Meta
                     thingWriter.Write(group.PatternZ);
                     thingWriter.Write(group.Frames);
 
-                    if (group.Frames > 1)
+                    if (group.Frames > 1 && ClientFeatures.FrameDurations)
                     {
-                        if (ClientFeatures.FrameDurations)
+                        thingWriter.Write(group.AnimationMode);
+                        thingWriter.Write((uint)group.LoopCount);
+                        thingWriter.Write((byte)group.StartFrame);
+                        
+                        for (int f = 0; f < group.Frames; f++)
                         {
-                            thingWriter.Write(group.AnimationMode);
-                            thingWriter.Write((uint)group.LoopCount);
-                            thingWriter.Write(group.StartFrame);
-                            foreach (var fd in group.FrameDurations)
+                            if (f < group.FrameDurations.Count)
                             {
-                                thingWriter.Write((uint)fd.Minimum);
-                                thingWriter.Write((uint)fd.Maximum);
+                                thingWriter.Write((uint)group.FrameDurations[f].Minimum);
+                                thingWriter.Write((uint)group.FrameDurations[f].Maximum);
+                            }
+                            else
+                            {
+                                thingWriter.Write((uint)100);
+                                thingWriter.Write((uint)100);
                             }
                         }
                     }
@@ -233,7 +246,7 @@ namespace BaconBinary.Core.IO.Meta
             }
             
             byte[] thingData = thingStream.ToArray();
-            writer.Write((uint)thingData.Length); // Changed to uint
+            writer.Write((uint)thingData.Length);
             writer.Write(thingData);
         }
     }

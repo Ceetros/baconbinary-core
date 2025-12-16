@@ -4,7 +4,7 @@ namespace BaconBinary.Core.Models
 {
     public class Sprite
     {
-        public const ushort ARGBPixelsDataSize = 4096; // 32*32*4
+        public const ushort ARGBPixelsDataSize = 4096;
         public static readonly byte[] BlankARGBSprite = new byte[ARGBPixelsDataSize];
 
         public uint Id { get; }
@@ -17,13 +17,10 @@ namespace BaconBinary.Core.Models
             Id = id;
             IsTransparent = isTransparent;
         }
-
-        /// <summary>
-        /// Decompresses the RLE-encoded sprite data into a 32bpp BGRA pixel array.
-        /// </summary>
+        
         public byte[] GetPixels()
         {
-            if (this.CompressedPixels == null || this.Size == 0)
+            if (this.CompressedPixels == null || this.CompressedPixels.Length == 0)
             {
                 return BlankARGBSprite;
             }
@@ -31,21 +28,26 @@ namespace BaconBinary.Core.Models
             var pixels = new byte[ARGBPixelsDataSize];
             int writePos = 0;
             int readPos = 0;
+            int inputLength = this.CompressedPixels.Length;
 
-            while (readPos < this.Size)
-            {
+            while (readPos < inputLength)
+            { 
+                if (readPos + 4 > inputLength) break;
+
                 ushort transparentPixels = BitConverter.ToUInt16(this.CompressedPixels, readPos);
                 readPos += 2;
 
                 ushort coloredPixels = BitConverter.ToUInt16(this.CompressedPixels, readPos);
                 readPos += 2;
-
-                // Skip transparent pixels by advancing the write position
+                
                 writePos += transparentPixels * 4;
 
                 for (int i = 0; i < coloredPixels; i++)
                 {
-                    if (writePos >= ARGBPixelsDataSize) break;
+                    if (writePos + 4 > ARGBPixelsDataSize) break;
+                    
+                    int bytesToRead = IsTransparent ? 4 : 3;
+                    if (readPos + bytesToRead > inputLength) break;
 
                     byte red = this.CompressedPixels[readPos++];
                     byte green = this.CompressedPixels[readPos++];
