@@ -206,6 +206,8 @@ namespace BaconBinary.Core.Models
         [ObservableProperty] private bool _isWrappable;
         [ObservableProperty] private bool _isUnwrappable;
 
+        [ObservableProperty] private bool _hasServerItem;
+
 
         public ThingType()
         {
