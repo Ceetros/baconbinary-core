@@ -72,22 +72,22 @@ namespace BaconBinary.Core.IO.Otb
                         item.Description = value;
                         break;
                     case "type":
-                        item.ItemType = System.Enum.Parse<ItemType>(value, true);
+                        item.ItemType = (ItemType)System.Enum.Parse(typeof(ItemType), value, true);
                         break;
                     case "slotType":
-                        item.SlotType = System.Enum.Parse<SlotType>(value, true);
+                        item.SlotType = (SlotType)System.Enum.Parse(typeof(SlotType), value, true);
                         break;
                     case "weaponType":
-                        item.WeaponType = System.Enum.Parse<WeaponType>(value, true);
+                        item.WeaponType = (WeaponType)System.Enum.Parse(typeof(WeaponType), value, true);
                         break;
                     case "ammoType":
-                        item.AmmoType = System.Enum.Parse<AmmoType>(value, true);
+                        item.AmmoType = (AmmoType)System.Enum.Parse(typeof(AmmoType), value, true);
                         break;
                     case "shootType":
-                        item.ShootType = System.Enum.Parse<ShootType>(value, true);
+                        item.ShootType = (ShootType)System.Enum.Parse(typeof(ShootType), value, true);
                         break;
                     case "effect":
-                        item.Effect = System.Enum.Parse<ShootType>(value, true);
+                        item.Effect = (ShootType)System.Enum.Parse(typeof(ShootType), value, true);
                         break;
                     case "attack":
                         item.Attack = int.Parse(value);
@@ -206,6 +206,9 @@ namespace BaconBinary.Core.IO.Otb
                                     break;
                             }
                         }
+                        break;
+                    case "floorchange":
+                        // This property is not in ServerItem, assuming it should be a boolean flag
                         break;
                 }
             }

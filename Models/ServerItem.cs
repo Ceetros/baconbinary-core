@@ -1,85 +1,86 @@
 using BaconBinary.Core.Enum;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BaconBinary.Core.Models
 {
-    public class ServerItem
+    public partial class ServerItem : ObservableObject
     {
-        public ushort Id { get; set; }
-        public ushort ClientId { get; set; }
-        public ServerItemType Type { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public byte[] SpriteHash { get; set; }
+        [ObservableProperty] private ushort _id;
+        [ObservableProperty] private ushort _clientId;
+        [ObservableProperty] private ServerItemType _type;
+        [ObservableProperty] private string _name;
+        [ObservableProperty] private string _description;
+        [ObservableProperty] private byte[] _spriteHash;
         
-        public bool Unpassable { get; set; }
-        public bool BlockMissiles { get; set; }
-        public bool BlockPathfinder { get; set; }
-        public bool HasElevation { get; set; }
-        public bool ForceUse { get; set; }
-        public bool MultiUse { get; set; }
-        public bool Pickupable { get; set; }
-        public bool Movable { get; set; }
-        public bool Stackable { get; set; }
-        public bool HasStackOrder { get; set; }
-        public bool Readable { get; set; }
-        public bool Rotatable { get; set; }
-        public bool Hangable { get; set; }
-        public bool HookSouth { get; set; }
-        public bool HookEast { get; set; }
-        public bool AllowDistanceRead { get; set; }
-        public bool HasCharges { get; set; }
-        public bool IgnoreLook { get; set; }
-        public bool FullGround { get; set; }
-        public bool IsAnimation { get; set; }
+        [ObservableProperty] private bool _unpassable;
+        [ObservableProperty] private bool _blockMissiles;
+        [ObservableProperty] private bool _blockPathfinder;
+        [ObservableProperty] private bool _hasElevation;
+        [ObservableProperty] private bool _forceUse;
+        [ObservableProperty] private bool _multiUse;
+        [ObservableProperty] private bool _pickupable;
+        [ObservableProperty] private bool _movable;
+        [ObservableProperty] private bool _stackable;
+        [ObservableProperty] private bool _hasStackOrder;
+        [ObservableProperty] private bool _readable;
+        [ObservableProperty] private bool _rotatable;
+        [ObservableProperty] private bool _hangable;
+        [ObservableProperty] private bool _hookSouth;
+        [ObservableProperty] private bool _hookEast;
+        [ObservableProperty] private bool _allowDistanceRead;
+        [ObservableProperty] private bool _hasCharges;
+        [ObservableProperty] private bool _ignoreLook;
+        [ObservableProperty] private bool _fullGround;
+        [ObservableProperty] private bool _isAnimation;
         
-        public ushort GroundSpeed { get; set; }
-        public ushort MinimapColor { get; set; }
-        public ushort MaxReadWriteChars { get; set; }
-        public ushort MaxReadChars { get; set; }
-        public ushort LightLevel { get; set; }
-        public ushort LightColor { get; set; }
-        public TileStackOrder StackOrder { get; set; }
-        public ushort TradeAs { get; set; }
+        [ObservableProperty] private ushort _groundSpeed;
+        [ObservableProperty] private ushort _minimapColor;
+        [ObservableProperty] private ushort _maxReadWriteChars;
+        [ObservableProperty] private ushort _maxReadChars;
+        [ObservableProperty] private ushort _lightLevel;
+        [ObservableProperty] private ushort _lightColor;
+        [ObservableProperty] private TileStackOrder _stackOrder;
+        [ObservableProperty] private ushort _tradeAs;
         
-        public string Article { get; set; }
-        public string EditorSuffix { get; set; }
-        public ItemType ItemType { get; set; }
-        public SlotType SlotType { get; set; }
-        public WeaponType WeaponType { get; set; }
-        public AmmoType AmmoType { get; set; }
-        public ShootType ShootType { get; set; }
-        public ShootType Effect { get; set; }
-        public int Attack { get; set; }
-        public int Defense { get; set; }
-        public int Armor { get; set; }
-        public int Charges { get; set; }
-        public int Duration { get; set; }
-        public int DecayTo { get; set; }
-        public int RotateTo { get; set; }
-        public int Range { get; set; }
-        public int Weight { get; set; }
-        public int Worth { get; set; }
-        public int Speed { get; set; }
-        public uint HealthGain { get; set; }
-        public uint HealthTicks { get; set; }
-        public uint ManaGain { get; set; }
-        public uint ManaTicks { get; set; }
-        public int MaxHitChance { get; set; }
-        public int HitChance { get; set; }
-        public int MagicLevelPoints { get; set; }
-        public int AbsorbPercentDeath { get; set; }
-        public int AbsorbPercentDrown { get; set; }
-        public int AbsorbPercentEarth { get; set; }
-        public int AbsorbPercentEnergy { get; set; }
-        public int AbsorbPercentFire { get; set; }
-        public int AbsorbPercentHoly { get; set; }
-        public int AbsorbPercentIce { get; set; }
-        public int AbsorbPercentLifeDrain { get; set; }
-        public int AbsorbPercentManaDrain { get; set; }
-        public int AbsorbPercentMagic { get; set; }
-        public int AbsorbPercentPhysical { get; set; }
-        public bool SuppressDrunk { get; set; }
-        public ItemField? Field { get; set; }
+        [ObservableProperty] private string _article;
+        [ObservableProperty] private string _editorSuffix;
+        [ObservableProperty] private ItemType _itemType;
+        [ObservableProperty] private SlotType _slotType;
+        [ObservableProperty] private WeaponType _weaponType;
+        [ObservableProperty] private AmmoType _ammoType;
+        [ObservableProperty] private ShootType _shootType;
+        [ObservableProperty] private ShootType _effect;
+        [ObservableProperty] private int _attack;
+        [ObservableProperty] private int _defense;
+        [ObservableProperty] private int _armor;
+        [ObservableProperty] private int _charges;
+        [ObservableProperty] private int _duration;
+        [ObservableProperty] private int _decayTo;
+        [ObservableProperty] private int _rotateTo;
+        [ObservableProperty] private int _range;
+        [ObservableProperty] private int _weight;
+        [ObservableProperty] private int _worth;
+        [ObservableProperty] private int _speed;
+        [ObservableProperty] private uint _healthGain;
+        [ObservableProperty] private uint _healthTicks;
+        [ObservableProperty] private uint _manaGain;
+        [ObservableProperty] private uint _manaTicks;
+        [ObservableProperty] private int _maxHitChance;
+        [ObservableProperty] private int _hitChance;
+        [ObservableProperty] private int _magicLevelPoints;
+        [ObservableProperty] private int _absorbPercentDeath;
+        [ObservableProperty] private int _absorbPercentDrown;
+        [ObservableProperty] private int _absorbPercentEarth;
+        [ObservableProperty] private int _absorbPercentEnergy;
+        [ObservableProperty] private int _absorbPercentFire;
+        [ObservableProperty] private int _absorbPercentHoly;
+        [ObservableProperty] private int _absorbPercentIce;
+        [ObservableProperty] private int _absorbPercentLifeDrain;
+        [ObservableProperty] private int _absorbPercentManaDrain;
+        [ObservableProperty] private int _absorbPercentMagic;
+        [ObservableProperty] private int _absorbPercentPhysical;
+        [ObservableProperty] private bool _suppressDrunk;
+        [ObservableProperty] private ItemField? _field;
         
         public string NameWithId => $"{Id} - {Name}";
     }
